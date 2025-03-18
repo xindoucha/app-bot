@@ -28,13 +28,36 @@ function main() {
   // 等待页面完全加载
   sleep(2000);
 
-  // 查找并点击"免费试"按钮
-  let freeTrialBtn = text("免费试").findOne(5000);
+  // 尝试通过多种方式查找免费试按钮
+  let freeTrialBtn = null;
+  
+  // 尝试通过描述查找
+  freeTrialBtn = desc("免费试").findOne(2000);
+  
+  if (!freeTrialBtn) {
+    // 尝试通过id查找
+    freeTrialBtn = id("free_trial_btn").findOne(2000);
+  }
+  
+  if (!freeTrialBtn) {
+    // 尝试通过图片查找
+    if (images.requestScreenCapture()) {
+      sleep(1000);
+      let screen = images.captureScreen();
+      let point = images.findImage(screen, images.read("/sdcard/autojs/free_trial.png"));
+      if (point) {
+        click(point.x + 10, point.y + 10);
+        toast("已点击免费试按钮");
+        sleep(3000);
+        return;
+      }
+    }
+  }
+
   if (freeTrialBtn) {
     toast("找到免费试按钮");
     freeTrialBtn.click();
     toast("已点击免费试按钮");
-    // 等待新页面加载
     sleep(3000);
   } else {
     toast("未找到免费试按钮");
