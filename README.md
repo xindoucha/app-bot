@@ -1,17 +1,23 @@
+# 大众点评免费试自动化执行脚本
+## 脚本说明
+- 脚本使用AutoJs6编写，仅支持 Android 系统。
+- 脚本可以自动完成大众点评的启动、免费抽等操作。（需要事先已登录账号）
 
-## AutoJs6
+## 相关资料
+### AutoJs6
 https://github.com/SuperMonster003/AutoJs6
 
-
-## 应用文档
+### 应用文档
 https://docs.autojs6.com/#/overview
 
-
-## vscode 插件
+### vscode 插件
 https://github.com/SuperMonster003/AutoJs6-VSCode-Extension
 
 
 ## 使用手册
+
+### ！！！仅限安卓手机
+
 ### 安装与配置
 1. 安装AutoJs6应用：从AutoJs6的官方网站或可信的应用商店下载并安装AutoJs6应用。
 https://github.com/SuperMonster003/AutoJs6/releases
