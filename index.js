@@ -27,6 +27,14 @@ function loadAppAndPage() {
 
     // 等待页面完全加载
     sleep(2000);
+
+    // 点击”免费试-吃喝玩乐“
+    const res = findELeAndClick("吃喝玩乐");
+    if (!res) {
+        toast("进入页面失败");
+        exit();
+    }
+    sleep(3000);
 }
 
 /***
@@ -44,6 +52,43 @@ function findELeAndClick(content) {
     return element
 }
 
+/**
+ * 查找并返回”回到顶部”按钮
+ * @returns {boolean} 是否成功点击
+ */
+function findAndClickBackToTop() {
+    // 尝试通过描述查找
+    let backToTopBtn = desc("回到顶部").findOne(2000);
+    
+    // 如果通过描述找不到，尝试通过ID查找
+    if (!backToTopBtn) {
+        backToTopBtn = id("back_to_top").findOne(2000);
+    }
+    
+    // 如果通过ID找不到，尝试通过类名和位置特征查找
+    if (!backToTopBtn) {
+        // 通常回到顶部按钮在屏幕右下角
+        let possibleBtns = className("android.widget.ImageView").find();
+        for (let i = 0; i < possibleBtns.length; i++) {
+            let btn = possibleBtns[i];
+            let bounds = btn.bounds();
+            // 检查按钮是否在屏幕右下角区域
+            if (bounds.right > device.width * 0.7 && 
+                bounds.bottom > device.height * 0.7 &&
+                bounds.width() < 100 && bounds.height() < 100) {
+                backToTopBtn = btn;
+                break;
+            }
+        }
+    }
+    
+    if (backToTopBtn) {
+        return backToTopBtn;
+    }
+    
+    return false;
+}
+
 // 主函数
 function main() {
     // 加载app和页面
@@ -52,74 +97,78 @@ function main() {
     // 记录处理的免费抽按钮数量
     let processedCount = 0;
 
-    // 循环查找并处理免费抽按钮
-    let swipeCount = 0; // 新增滑动计数器
+    let lastFreeLotteryBtnPosition = null; // 新增记录最后一个免费抽按钮位置的变量， 防止重复点击
     while (true) {
-        if (processedCount % 4 === 0) {
-            // 滑动屏幕
-            swipe(
-                device.width / 2,
-                (device.height * 3) / 4,
-                device.width / 2,
-                device.height / 4,
-                500
-            );
+        // 滑动屏幕 如果滑动失败，继续滑动
+        const res = swipe(
+            device.width / 2,
+            (device.height * 3) / 4,
+            device.width / 2,
+            device.height / 4,
+            1000
+        );
+        if (!res) {
+            console.log("滑动失败，继续滑动");
+            continue;
         }
+
         // 一个等待滑动结束的逻辑
         sleep(3000);
         // 查找"免费抽"按钮
-        let freeLotteryBtn = text("免费抽").findOne(5000);
-        if (!freeLotteryBtn) {
-            // 新增滑动次数判断
-            if (swipeCount >= 3) {
-                // 连续滑动3次未找到则视为到底
-                toast("已经滑动到底部，退出循环。" + "已处理" + processedCount + "个");
-                break;
-            }
-
-            // 滑动屏幕
-            swipe(
-                device.width / 2,
-                (device.height * 3) / 4,
-                device.width / 2,
-                device.height / 4,
-                500
-            );
-            swipeCount++; // 增加滑动次数
-            sleep(2000);
+        let freeLotteryBtn = text("免费抽").find(5000);
+        if (freeLotteryBtn.length === 0) {
+            // 如果没有找到按钮，跳过循环
             continue;
         }
-        // 重置滑动计数器（找到有效按钮时）
-        swipeCount = 0;
 
-        processedCount++;
-        toast("找到第" + processedCount + "个免费抽按钮");
-        let bounds = freeLotteryBtn.bounds();
-        click(bounds.centerX(), bounds.centerY());
+        // 处理每个免费抽按钮
+        for (let i = 0; i < freeLotteryBtn.length; i++) {
+            let btn = freeLotteryBtn[i];
+            let bounds = btn.bounds();
+            // 如果当前按钮位置与上一个按钮位置相同，跳过当前按钮
+            if (lastFreeLotteryBtnPosition && lastFreeLotteryBtnPosition[0] === bounds.centerX() && lastFreeLotteryBtnPosition[1] === bounds.centerY()) {
+                continue;
+            }
+            // 如果 y 坐标小于 200，跳过当前按钮
+            if (bounds.centerY() < 200) {
+                continue;
+            }
+            // 如果当前按钮的中心点落在顶部按钮的bounds中，跳过当前按钮
+            let backToTopBtn = findAndClickBackToTop();
+            if (backToTopBtn) {
+                let backToTopBtnBounds = backToTopBtn.bounds();
+                if (backToTopBtnBounds.contains(bounds.centerX(), bounds.centerY())) {
+                    continue;
+                }
+            }
+            lastFreeLotteryBtnPosition = [bounds.centerX(), bounds.centerY()];
+            click(bounds.centerX(), bounds.centerY());
+            // 等待新页面加载
+            sleep(3000);
 
-        // 等待新页面加载
-        sleep(3000);
-
-        // 查找并点击"我要报名"按钮
-        let signUpBtn = findELeAndClick("我要报名");
-        if (signUpBtn) {
-            // 等待弹窗出现
-            sleep(2000);
-            // 查找并点击"确认报名"按钮
-            let confirmBtn = findELeAndClick("确认报名");
-            if (confirmBtn) {
+            // 查找并点击"我要报名"按钮
+            let signUpBtn = findELeAndClick("我要报名");
+            if (signUpBtn) {
+                // 等待弹窗出现
                 sleep(2000);
-                // 返回上级页面
-                back();
+                // 查找并点击"确认报名"按钮
+                let confirmBtn = findELeAndClick("确认报名");
+                if (confirmBtn) {
+                    console.log(`已报名免费抽活动数量：${processedCount++}` + "个");
+                    sleep(2000);
+                    // 返回上级页面
+                    back();
+                } else {
+                    back();
+                    continue;
+                }
             } else {
                 continue;
             }
-        } else {
-            continue;
-        }
 
-        // 在继续查找下一个按钮前稍作延迟
-        sleep(2000);
+            // 在继续查找下一个按钮前稍作延迟
+            sleep(2000);
+        }
     }
 }
 

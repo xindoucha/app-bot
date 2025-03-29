@@ -6,12 +6,9 @@ auto();
 // 设置运行超时
 setTimeout(120000);
 
-/***
- * 找到某个元素并点击它
- */
-function findAndClick(text) {
 
-}
+
+
 
 // 主函数
 function main() {
