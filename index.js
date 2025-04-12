@@ -3,6 +3,22 @@
 // 确保无障碍服务已启用
 auto();
 
+// 屏蔽词列表
+const blockWords = ['古筝', '宠物', '篮球', '足球', '少儿', '自习', '课程', '刺青', '纹身', '月子', '产后'];
+// 免费试下面的文案
+const freeTrialText = "荔枝冰酿" // "吃喝玩乐";
+
+// 检测屏蔽词
+function containsBlockWord() {
+    let found = false;
+    const regex = new RegExp(blockWords.join('|'));
+    textMatch(regex).find().forEach(word => {
+        console.log('发现屏蔽词：' + word.text());
+        found = true;
+    });
+    return found;
+}
+
 /**
  * 加载app和页面
  * @param {*} appName 
@@ -29,7 +45,7 @@ function loadAppAndPage() {
     sleep(2000);
 
     // 点击”免费试-吃喝玩乐“
-    const res = findELeAndClick("吃喝玩乐");
+    const res = findELeAndClick(freeTrialText);
     if (!res) {
         toast("进入页面失败");
         exit();
@@ -146,9 +162,15 @@ function main() {
             // 等待新页面加载
             sleep(3000);
 
+            // 先执行屏蔽词检测
+            if (containsBlockWord()) {
+                console.log('发现屏蔽词，跳过当前活动');
+                back();
+                continue;
+            }
+
             // 查找并点击"我要报名"按钮
-            let signUpBtn = findELeAndClick("我要报名");
-            if (signUpBtn) {
+            if (findELeAndClick("我要报名")) {
                 // 等待弹窗出现
                 sleep(2000);
                 // 查找并点击"确认报名"按钮
