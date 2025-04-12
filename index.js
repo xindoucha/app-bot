@@ -4,19 +4,19 @@
 auto();
 
 // 屏蔽词列表
-const blockWords = ['古筝', '宠物', '篮球', '足球', '少儿', '自习', '课程', '刺青', '纹身', '月子', '产后'];
+const blockWords = ['古筝', '健身', '宠物', '篮球', '足球', '少儿', '自习', '课程', '刺青', '纹身', '月子', '产后'];
 // 免费试下面的文案
 const freeTrialText = "荔枝冰酿" // "吃喝玩乐";
 
 // 检测屏蔽词
 function containsBlockWord() {
-    let found = false;
     const regex = new RegExp(blockWords.join('|'));
-    textMatch(regex).find().forEach(word => {
-        console.log('发现屏蔽词：' + word.text());
-        found = true;
-    });
-    return found;
+    const matches = textMatch(regex).find();
+    if (matches.length > 0) {
+        console.log('发现屏蔽词：' + matches[0].text());
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -131,6 +131,7 @@ function main() {
         // 一个等待滑动结束的逻辑
         sleep(3000);
         // 查找"免费抽"按钮
+        console.log('寻找免费抽按钮...');
         let freeLotteryBtn = text("免费抽").find(5000);
         if (freeLotteryBtn.length === 0) {
             // 如果没有找到按钮，跳过循环
@@ -141,6 +142,8 @@ function main() {
         for (let i = 0; i < freeLotteryBtn.length; i++) {
             let btn = freeLotteryBtn[i];
             let bounds = btn.bounds();
+            console.log('当前循环的第' + i + '个按钮');
+
             // 如果当前按钮位置与上一个按钮位置相同，跳过当前按钮
             if (lastFreeLotteryBtnPosition && lastFreeLotteryBtnPosition[0] === bounds.centerX() && lastFreeLotteryBtnPosition[1] === bounds.centerY()) {
                 continue;
@@ -159,8 +162,29 @@ function main() {
             }
             lastFreeLotteryBtnPosition = [bounds.centerX(), bounds.centerY()];
             click(bounds.centerX(), bounds.centerY());
+            console.log('点击了第' + i + '个按钮');
             // 等待新页面加载
             sleep(3000);
+
+            // 等待页面加载完成的标志，比如某个元素出现
+            let loadingTimeout = 5000; // 最长等待5秒
+            let startTime = Date.now();
+            let pageLoaded = false;
+            
+            while (Date.now() - startTime < loadingTimeout) {
+                // 尝试查找页面上常见的元素，如标题、按钮等
+                if (text("我要报名").exists() || text("免费试活动详情").exists()) {
+                    console.log("页面已加载完成");
+                    pageLoaded = true;
+                    break;
+                }
+                sleep(500); // 每500毫秒检查一次
+            }
+            
+            if (!pageLoaded) {
+                console.log("页面加载超时，继续执行");
+                continue;
+            }
 
             // 先执行屏蔽词检测
             if (containsBlockWord()) {
