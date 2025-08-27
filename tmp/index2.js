@@ -1,19 +1,12 @@
-// 大众点评App自动化脚本 v1.0.0
+// 大众点评App自动化脚本
 
 // 确保无障碍服务已启用
 auto();
 
 // 屏蔽词列表
-const blockWords = [
-    '古筝', '健身', '宠物', 
-    '篮球', '足球', '乒乓球', '台球', '足疗', '羽毛球', 
-    '中医', '减肥', '口腔', '瑜伽', '电竞',
-    '少儿', '儿童', '自习', '课程', '改衣', 
-    '刺青', '纹身', '月子', '产后'
-];
+const blockWords = ['古筝', '健身', '宠物', '篮球', '足球', '少儿', '自习', '课程', '刺青', '纹身', '纹眉', '月子', '产后'];
 // 免费试下面的文案
-const freeTrialText = "吃喝玩乐";
-// const freeTrialText = "荔枝冰酿"
+const freeTrialText = "荔枝冰酿" // "吃喝玩乐";
 
 // 检测屏蔽词
 function containsBlockWord() {
@@ -155,11 +148,8 @@ function main() {
             if (lastFreeLotteryBtnPosition && lastFreeLotteryBtnPosition[0] === bounds.centerX() && lastFreeLotteryBtnPosition[1] === bounds.centerY()) {
                 continue;
             }
-            // 如果 y 坐标在头部或者底部，跳过当前按钮，避免点击到别的区域
-            if (bounds.centerY() < 300) {
-                continue;
-            }
-            if (bounds.bottom  > device.height * 0.7) {
+            // 如果 y 坐标小于 200，跳过当前按钮
+            if (bounds.centerY() < 200) {
                 continue;
             }
             // 如果当前按钮的中心点落在顶部按钮的bounds中，跳过当前按钮
