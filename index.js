@@ -14,7 +14,7 @@ const blockWords = [
 // 免费试下面的文案
 // const freeTrialText = "吃喝玩乐";
 // const freeTrialText = "荔枝冰酿"
-// const freeTrialText = "2万个活动在线"
+const freeTrialText = "2万个活动在线"
 
 // 检测屏蔽词
 function containsBlockWord() {
